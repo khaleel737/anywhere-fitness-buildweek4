@@ -1,0 +1,40 @@
+{
+  "name": "anywhere-fitness-buildweek4",
+  "version": "1.0.0",
+  "description": "# Anywhere Fitness",
+  "main": "index.js",
+  "scripts": {
+    "server": "nodemon index.js",
+    "start": "nodemon index.js",
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run",
+    "resetdb": "knex migrate:rollback && knex migrate:latest && knex seed:run",
+    "test": "cross-env NODE_ENV=testing jest --verbose --watch --runInBand"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khaleel737/anywhere-fitness-buildweek4.git"
+  },
+  "author": "khaleel-musleh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khaleel737/anywhere-fitness-buildweek4/issues"
+  },
+  "homepage": "https://github.com/khaleel737/anywhere-fitness-buildweek4#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "helmet": "^5.0.2",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.95.14",
+    "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "eslint": "^8.10.0",
+    "jwt-decode": "^3.1.2",
+    "nodemon": "^2.0.15"
+  }
+}
