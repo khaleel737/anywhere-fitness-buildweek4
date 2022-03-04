@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const Clients = require("../instructors/instructors-model");
+const Clients = require("./clients-model");
 const { restricted, only } = require("../auth/auth-middleware.js");
 
 /**
@@ -17,6 +17,12 @@ const { restricted, only } = require("../auth/auth-middleware.js");
     }
   ]
  */
+router.get('/', (req, res, next) => {
+  Clients.getAll().then(client => {
+    res.status(200).json(client)
+  })
+})
+
 router.get("/", restricted, (req, res, next) => { // done for you
   Clients.find()
     .then(client => {

@@ -8,7 +8,7 @@ const authRouter = require('./auth/auth-router');
 
 const clientsRouter = require('./clients/clients-router');
 
-const instructorsRouter = require('./instructors/instructors-router');
+const classesRouter = require('./classes/classes-router');
 
 const server = express();
 
@@ -22,7 +22,7 @@ server.use('/api/auth', authRouter);
 
 server.use('/api/clients', clientsRouter);
 
-server.use('/api/instructors', instructorsRouter)
+server.use('/api/classes', classesRouter)
 
 
 server.use((err, req, res, next) => {

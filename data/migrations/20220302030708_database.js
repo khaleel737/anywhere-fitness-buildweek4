@@ -1,18 +1,32 @@
 exports.up = function (knex) {
   return knex.schema
-    .createTable("instructors", (instructor) => {
-      instructor.increments("instructor_id");
-      instructor.string("Name", 32).notNullable().unique()
-      instructor.string("Type", 32).notNullable()
-      instructor.date("Start_Time", 32).notNullable()
-      instructor.integer("Duration", 32).notNullable()
-      instructor.string("Intensity_level", 32).notNullable()
-      instructor.string("Location", 32).notNullable()
-      instructor
+    .createTable("classes", (classes) => {
+      classes.increments("class_id");
+      classes.string("Name", 32).notNullable().unique()
+      classes.string("Type", 32).notNullable()
+      classes.date("Start_Time", 32).notNullable()
+      classes.integer("Duration", 32).notNullable()
+      classes.string("Intensity_level", 32).notNullable()
+      classes.string("Location", 32).notNullable()
+      classes
         .integer("Current_Number_Of_Registered_Attendees", 32)
         .notNullable()
-      instructor.integer("Max_Class_Size", 32).notNullable()
+      classes.integer("Max_Class_Size", 32).notNullable()
+      classes.string("Category")
     })
+
+    
+
+    .createTable("clients", (client) => {
+      client.increments("client_id");
+      client.string('username').notNullable().unique()
+      client.string('password').notNullable()
+      client.string("Name", 32).notNullable()
+      client.string("Class", 32).unique().unsigned()
+        .references('class_id')
+        .inTable('classes')
+        .onUpdate('RESTRICT')
+        .onDelete('RESTRICT')
    
       //   .unsigned()
       //   .notNullable()
@@ -20,11 +34,17 @@ exports.up = function (knex) {
       //   .inTable('roles')
       //   .onUpdate('RESTRICT')
       //   .onDelete('RESTRICT')
+});
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTableIfExists("instructors");
+  return knex.schema.dropTableIfExists("classes").dropTableIfExists("clients");
 };
+
+// Name
+// Age
+// Class
+
 
 //   4. Authenticated `Instructor` can create update and delete a `class`. At a minimum, each `class` must have the following properties:
 
