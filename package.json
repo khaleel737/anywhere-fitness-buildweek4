@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "# Anywhere Fitness",
   "main": "index.js",
+  "engine": {
+    "node": "16.x"
+  },
   "scripts": {
     "server": "nodemon index.js",
     "start": "node index.js",
