@@ -1,88 +1,60 @@
-const router = require("express").Router();
-const bcrypt = require('bcryptjs')
-const Clients = require('../clients/clients-router')
-const jwt = require('jsonwebtoken')
-const { checkUsernameExists, validateRoleName } = require('./auth-middleware');
-const { BCRYPT_ROUNDS, JWT_SECRET } = require("../secrets/index"); // use this secret!
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const middleware = require('./auth-middleware');
+const Users = require('../clients/clients-model');
 
-// router.post("/register", validateRoleName, (req, res, next) => {
-  
-//   let user = req.body
-//   console.log(user);
-  
-//   // bcrypting the password before saving
-//   const hash = bcrypt.hashSync(user.password, BCRYPT_ROUNDS)
-//   // never save the plain text password in the db
-//   user.password = hash
+const router = express.Router();
 
-//   User.add(user)
-//     .then(saved => {
-//       res.status(201).json({
-//         role_name: saved.role_name.trim(),
-//         user_id: saved.user_id,
-//         username: saved.username.trim(),
-//       })
-//     })
-//     .catch(next) // our custom err handling middleware in server.js will trap this
-//   /**
-//     [POST] /api/auth/register { "username": "anna", "password": "1234", "role_name": "angel" }
+router.post('/register', middleware.verifyRegister, (req, res) => {
+  const newUser = req.body;
 
-//     response:
-//     status 201
-//     {
-//       "user"_id: 3,
-//       "username": "anna",
-//       "role_name": "angel"
-//     }
-//    */
-// });
+  const hash = bcrypt.hashSync(newUser.password, 10);
+  newUser.password = hash;
 
+  Users.addUser(newUser)
+    .then(user => {
 
-// router.post("/login", checkUsernameExists, (req, res, next) => {
-//   let { username, password } = req.body
+      const token = signToken(user);
+      res.status(200).json({ user: { id: user.id, username: user.username, email: user.email, role: user.role, token: token, message: `Welcome, ${user.username}. Thanks for registering as an ${user.role} today! ` } });
+    })
+    .catch(error => {
+      console.log('inside authRouter error', error);
+      res.status(500).json({ message: 'Sorry, no new user created on the server', error });
+    });
+});
 
-//   User.findBy({ username })
-//     .then(([user]) => {
-//       if (user && bcrypt.compareSync(password, user.password)) {
-//         const token = generateToken(user);
-//         res.status(200).json({
-//           message: `${user.username} is back!`,
-//           token,
-//         })
-//       } else {
-//         next({ status: 401, message: 'Invalid Credentials' })
-//       }
-//     })
-//     .catch(next)
-//   /**
-//     [POST] /api/auth/login { "username": "sue", "password": "1234" }
+router.post('/login', (req, res) => {
+  const { username, password, role } = req.body;
 
-//     response:
-//     status 200
-//     {
-//       "message": "sue is back!",
-//       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ETC.ETC"
-//     }
+  Users.findBy(username)
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
 
-//     The token must expire in one day, and must provide the following information
-//     in its payload:
+        const token = signToken(user);
 
-//     {
-//       "subject"  : 1       // the user_id of the authenticated user
-//       "username" : "bob"   // the username of the authenticated user
-//       "role_name": "admin" // the role of the authenticated user
-//     }
-//    */
-// });
+        res.status(200).json({ user: { id: user.id, message: `Welcome ${user.username}. Thanks for being an ${user.role} today! `, username: user.username, email: user.email, role: user.role, token: token } });
+      } else {
+        res.status(401).json({ message: 'Sorry, Invalid credentials' });
+      }
+    })
+    .catch(error => {
+      console.log('inside authRouter findBy error', error);
+      res.status(500).json({ message: 'Sorry, login not working on the server', error });
+    });
+});
 
-// function generateToken(user) {
-//   const payload = {
-//     subject: user.user_id,
-//     username: user.username,
-//     role_name: user.role_name,
-//   };
+function signToken(user) {
+  const payload = {
 
-//   return jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' })
-// }
+    user
+  };
+
+  const options = {
+    expiresIn: '1d'
+  };
+
+  return jwt.sign(payload, process.env.JWT_SECRET, options);
+}
 
 module.exports = router;

@@ -1,67 +1,73 @@
-exports.up = function (knex) {
+exports.up = function(knex) {
+  // for seeds, make sure this order matches
+  // 'users' table
+  return (
+    knex.schema
+      .createTable('users', tbl => {
+        tbl.increments();
+
+        tbl
+          .string('username', 255)
+          .notNullable()
+          .unique();
+
+        tbl
+          .string('email', 255)
+          .notNullable()
+          .unique();
+
+        tbl.string('password', 255).notNullable();
+
+        tbl.string('role').notNullable();
+
+        tbl.timestamps(true, true);
+      }) //end of 'users' table
+
+      // 'classes' table
+      .createTable('classes', tbl => {
+        tbl.increments();
+
+        tbl.string('class_name', 255).notNullable();
+
+        tbl.string('class_duration', 255).notNullable();
+
+        tbl.string('class_intensity_level', 25).notNullable();
+
+        tbl.string('class_city', 75).notNullable();
+
+        tbl.date('class_date');
+
+        tbl.string('start_time');
+
+        tbl.datetime('class_timezone');
+      }) // end of 'classes' table
+
+      .createTable('attendees', tbl => {
+        tbl.increments();
+        tbl
+          .integer('user_id')
+          .references('id')
+          .inTable('users')
+          .unsigned()
+          .notNullable()
+          .onUpdate('CASCADE')
+          .onDelete('CASCADE');
+        tbl
+          .integer('class_id')
+          .references('id')
+          .inTable('classes')
+          .unsigned()
+          .notNullable()
+          .onUpdate('CASCADE')
+          .onDelete('CASCADE');
+      }) //end of 'attendees' table
+  );
+};
+
+exports.down = function(knex) {
+  //make sure to reverser order from above
   return knex.schema
-    .createTable("classes", (classes) => {
-      classes.increments("class_id");
-      classes.string("Name", 32).notNullable().unique()
-      classes.string("Type", 32).notNullable()
-      classes.date("Start_Time", 32).notNullable()
-      classes.integer("Duration", 32).notNullable()
-      classes.string("Intensity_level", 32).notNullable()
-      classes.string("Location", 32).notNullable()
-      classes
-        .integer("Current_Number_Of_Registered_Attendees", 32)
-        .notNullable()
-      classes.integer("Max_Class_Size", 32).notNullable()
-      classes.string("Category")
-    })
-
-    
-
-    .createTable("clients", (client) => {
-      client.increments("client_id");
-      client.string('username').notNullable().unique()
-      client.string('password').notNullable()
-      client.string("Name", 32).notNullable()
-      client.string("Class", 32).unique().unsigned()
-        .references('class_id')
-        .inTable('classes')
-        .onUpdate('RESTRICT')
-        .onDelete('RESTRICT')
-   
-      //   .unsigned()
-      //   .notNullable()
-      //   .references('role_id')
-      //   .inTable('roles')
-      //   .onUpdate('RESTRICT')
-      //   .onDelete('RESTRICT')
-});
+    .dropTableIfExists('attendees')
+    .dropTableIfExists('classes')
+    .dropTableIfExists('users');
 };
-
-exports.down = function (knex) {
-  return knex.schema.dropTableIfExists("classes").dropTableIfExists("clients");
-};
-
-// Name
-// Age
-// Class
-
-
-//   4. Authenticated `Instructor` can create update and delete a `class`. At a minimum, each `class` must have the following properties:
-
-//   - `Name` String
-//   - `Type` String
-//   - `Start time` Date
-//   - `Duration` Integer
-//   - `Intensity level` String
-//   - `Location` String
-//   - `Current number of registered attendees` Integer
-//   - `Max class size` Integer
-
-//   5. Authenticated `client` can search for available classes. At a minimum, they must be able to search by the following criteria:
-
-//   - `class time` Time
-//   - `class date` Date
-//   - `class duration` Integer
-//   - `class type` String
-//   - `intensity level` String
-//   - `class location` String

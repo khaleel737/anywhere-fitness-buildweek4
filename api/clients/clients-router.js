@@ -1,57 +1,62 @@
-const router = require("express").Router();
-const Clients = require("./clients-model");
-const { restricted, only } = require("../auth/auth-middleware.js");
+const express = require('express');
+const Users = require('./clients-model');
+const restricted = require('../auth/restricted-middleware');
+const router = express.Router();
 
-/**
-  [GET] /api/users
 
-  This endpoint is RESTRICTED: only authenticated clients
-  should have access.
-
-  response:
-  status 200
-  [
-    {
-      "user_id": 1,
-      "username": "bob"
-    }
-  ]
- */
-router.get('/', (req, res, next) => {
-  Clients.getAll().then(client => {
-    res.status(200).json(client)
-  })
-})
-
-router.get("/", restricted, (req, res, next) => { // done for you
-  Clients.find()
-    .then(client => {
-      res.status(200).json(client);
+router.get('/', (req, res) => {
+  //add logic here
+  Users.getUsers()
+    .then(users => {
+      res.status(200).json(users);
     })
-    .catch(next);
+    .catch(error => {
+      console.log('inside getUsers error', error);
+      res.status(500).json({ message: 'Sorry, no users returned from the server', error });
+    });
 });
 
-/**
-  [GET] /api/users/:user_id
+router.get('/:id', (req, res) => {
+  const userId = req.params.id;
 
-  This endpoint is RESTRICTED: only authenticated users with role 'admin'
-  should have access.
-
-  response:
-  status 200
-  [
-    {
-      "user_id": 1,
-      "username": "bob"
-    }
-  ]
- */
-router.get("/:user_id", restricted, (req, res, next) => { // done for you
-  Clients.findById(req.params.instructor_id)
-    .then(client => {
-      res.status(200).json(client);
+  Users.getUserById(userId)
+    .then(user => {
+      if (user) {
+        res.status(200).json(user);
+      } else {
+        res.status(401).json({ message: 'Sorry, user with that id not found' });
+      }
     })
-    .catch(next);
+    .catch(error => {
+      console.log('inside getUserById error', error);
+      res.status(500).json({ message: 'Sorry, no user with that id returned from the server', error });
+    });
+});
+
+
+router.put('/:id', (req, res) => {
+  Users.updateUser(req.params.id, req.body)
+    .then(user => {
+      console.log(req.body);
+      res.status(201).json(user);
+    })
+    .catch(err => {
+      res.status(500).json({ error: ' something went wrong in the server' });
+    });
+});
+
+
+router.delete('/:id', (req, res) => {
+  const deletedId = req.params.id;
+
+  Users.deleteUser(deletedId)
+    .then(user => {
+      res.status(200).json(`id ${deletedId} was deleted`);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: 'error with the server' });
+    });
 });
 
 module.exports = router;
